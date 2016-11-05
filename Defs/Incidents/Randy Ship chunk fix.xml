@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<IncidentDefs>
+
+  <!--=============== ShipChunkDrop =============-->
+  
+  <IncidentDef>
+    <defName>ShipChunkDrop</defName>
+    <label>ship chunk drop</label>
+    <workerClass>IncidentWorker_ShipChunkDrop</workerClass>
+    <category>ShipChunkDrop</category>
+    <baseChance>1</baseChance>
+  </IncidentDef>
+
+</IncidentDefs>

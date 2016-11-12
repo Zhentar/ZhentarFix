@@ -10,6 +10,7 @@ namespace ZhentarFix
 {
 	public class AnimalHaulFix
 	{
+		[DetourClassMethod(typeof(JobGiver_Haul))]
 		protected Job TryGiveJob(Pawn pawn)
 		{
 			Predicate<Thing> validator = t => !t.IsForbidden(pawn) && HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t) && IsPlaceToPutThing(pawn, t);

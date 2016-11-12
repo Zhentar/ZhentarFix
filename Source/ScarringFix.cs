@@ -8,6 +8,7 @@ namespace ZhentarFix
 {
 	class ScarringFix : Hediff_Injury
 	{
+		[DetourClassMethod(typeof(Hediff_Injury))]
 		public void DirectHeal(float amount) 
 		{
 			if (amount <= 0f)
@@ -25,9 +26,9 @@ namespace ZhentarFix
 			this.Severity -= amount;
 			if (this.comps != null)
 			{
-				for (int i = 0; i < this.comps.Count; i++)
+				foreach (HediffComp hediff in this.comps)
 				{
-					this.comps[i].CompPostDirectHeal(amount);
+					hediff.CompPostDirectHeal(amount);
 				}
 			}
 		}

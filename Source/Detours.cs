@@ -7,11 +7,80 @@ using Verse;
 
 namespace ZhentarFix
 {
-	public static class Detours
+	[AttributeUsage(AttributeTargets.Method)]
+	public class DetourClassMethod : Attribute
 	{
 
-		private static List<string> detoured = new List<string>();
-		private static List<string> destinations = new List<string>();
+		public readonly Type fromClass;
+		public readonly string fromMethod;
+
+		public DetourClassMethod(Type fromClass, string fromMethod = null)
+		{
+			this.fromClass = fromClass;
+			this.fromMethod = fromMethod;
+		}
+
+	}
+
+	[StaticConstructorOnStartup]
+	public static class Detours
+	{
+		public const BindingFlags UniversalBindingFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+		static Detours()
+		{
+			LongEventHandler.QueueLongEvent(Inject, "Initializing", true, null);
+		}
+
+		private static void Inject()
+		{
+			var toTypes = typeof(Detours).Assembly.GetTypes().Where(toType => toType.GetMethods(UniversalBindingFlags).Any(toMethod => toMethod.HasAttribute<DetourClassMethod>()));
+
+			foreach (var type in toTypes)
+			{
+				DetourMethods(type);
+			}
+		}
+
+		private static void DetourMethods(Type toType)
+		{
+			var toMethods = toType
+				.GetMethods(UniversalBindingFlags)
+				.Where(toMethod => toMethod.HasAttribute<DetourClassMethod>())
+				.ToList();
+			if (toMethods.NullOrEmpty())
+			{   // No methods to detour
+				return;
+			}
+			foreach (var toMethod in toMethods)
+			{
+				DetourClassMethod attribute = null;
+				if (toMethod.TryGetAttribute(out attribute))
+				{
+					var fromMethodName = attribute.fromMethod ?? toMethod.Name;
+					MethodInfo fromMethod;
+					try
+					{   // Try to get method direct
+						fromMethod = attribute.fromClass.GetMethod(fromMethodName, UniversalBindingFlags);
+					}
+					catch
+					{   // May be ambiguous, try from parameter count
+						fromMethod = attribute.fromClass.GetMethods(UniversalBindingFlags)
+												  .FirstOrDefault(checkMethod =>
+																 (
+																	 (checkMethod.Name == fromMethodName) &&
+																	 (checkMethod.ReturnType == toMethod.ReturnType) &&
+																	 (checkMethod.GetParameters().Length == toMethod.GetParameters().Length)
+																	));
+					}
+					if (!TryDetourFromTo(fromMethod, toMethod))
+					{
+						Log.Error($"Failed to Detour '{toType.FullName}.{toMethod.Name}'");
+					}
+				}
+			}
+		}
+
 
 		/**
             This is a basic first implementation of the IL method 'hooks' (detours) made possible by RawCode's work;
@@ -36,9 +105,6 @@ namespace ZhentarFix
 			// keep track of detours and spit out some messaging
 			string sourceString = source.DeclaringType.FullName + "." + source.Name + " @ 0x" + source.MethodHandle.GetFunctionPointer().ToString("X" + (IntPtr.Size * 2).ToString());
 			string destinationString = destination.DeclaringType.FullName + "." + destination.Name + " @ 0x" + destination.MethodHandle.GetFunctionPointer().ToString("X" + (IntPtr.Size * 2).ToString());
-
-			detoured.Add(sourceString);
-			destinations.Add(destinationString);
 
 			if (IntPtr.Size == sizeof(Int64))
 			{

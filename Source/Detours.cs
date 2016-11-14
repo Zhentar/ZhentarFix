@@ -22,6 +22,20 @@ namespace ZhentarFix
 
 	}
 
+	[AttributeUsage(AttributeTargets.Property)]
+	public class DetourClassProperty : Attribute
+	{
+
+		public readonly Type fromClass;
+		public readonly string fromProperty;
+
+		public DetourClassProperty(Type fromClass, string fromProperty = null)
+		{
+			this.fromClass = fromClass;
+			this.fromProperty = fromProperty;
+		}
+
+	}
 	[StaticConstructorOnStartup]
 	public static class Detours
 	{
@@ -34,11 +48,13 @@ namespace ZhentarFix
 
 		private static void Inject()
 		{
-			var toTypes = typeof(Detours).Assembly.GetTypes().Where(toType => toType.GetMethods(UniversalBindingFlags).Any(toMethod => toMethod.HasAttribute<DetourClassMethod>()));
+			var toTypes = typeof(Detours).Assembly.GetTypes().Where(toType => toType.GetMethods(UniversalBindingFlags).Any(toMethod => toMethod.HasAttribute<DetourClassMethod>()) ||
+																			  toType.GetProperties(UniversalBindingFlags).Any(toProperty => toProperty.HasAttribute<DetourClassProperty>()));
 
 			foreach (var type in toTypes)
 			{
 				DetourMethods(type);
+				DetourProperties(type);
 			}
 		}
 
@@ -46,12 +62,8 @@ namespace ZhentarFix
 		{
 			var toMethods = toType
 				.GetMethods(UniversalBindingFlags)
-				.Where(toMethod => toMethod.HasAttribute<DetourClassMethod>())
-				.ToList();
-			if (toMethods.NullOrEmpty())
-			{   // No methods to detour
-				return;
-			}
+				.Where(toMethod => toMethod.HasAttribute<DetourClassMethod>());
+			
 			foreach (var toMethod in toMethods)
 			{
 				DetourClassMethod attribute = null;
@@ -81,6 +93,31 @@ namespace ZhentarFix
 			}
 		}
 
+		private static void DetourProperties(Type toType)
+		{
+			var toProperties = toType.GetProperties(UniversalBindingFlags).Where(toProperty => toProperty.HasAttribute<DetourClassProperty>());
+
+			foreach (var toProperty in toProperties)
+			{
+				DetourClassProperty attribute = null;
+				if (toProperty.TryGetAttribute(out attribute))
+				{
+					var fromProperty = attribute.fromClass.GetProperty(attribute.fromProperty ?? toProperty.Name, UniversalBindingFlags);
+					var toMethod = toProperty.GetGetMethod(true);
+					if (toMethod != null)
+					{   // Check for get method detour
+						var fromMethod = fromProperty.GetGetMethod(true);
+						TryDetourFromTo(fromMethod, toMethod);
+					}
+					toMethod = toProperty.GetSetMethod(true);
+					if (toMethod != null)
+					{   // Check for set method detour
+						var fromMethod = fromProperty.GetSetMethod(true);
+						TryDetourFromTo(fromMethod, toMethod);
+					}
+				}
+			}
+		}
 
 		/**
             This is a basic first implementation of the IL method 'hooks' (detours) made possible by RawCode's work;

@@ -9,7 +9,7 @@ namespace ZhentarFix
 	class ScarringFix : Hediff_Injury
 	{
 		[DetourClassMethod(typeof(Hediff_Injury))]
-		public void DirectHeal(float amount) 
+		public override void DirectHeal(float amount) 
 		{
 			if (amount <= 0f)
 			{

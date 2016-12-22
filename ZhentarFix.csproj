@@ -51,13 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Source\AnimalHaulFix.cs" />
-    <Compile Include="Source\Designators.cs" />
     <Compile Include="Source\Detours.cs" />
     <Compile Include="Source\Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\ScarringFix.cs" />
-    <Compile Include="Source\StoryWatcher_RampUpFix.cs" />
     <Compile Include="Source\Utils.cs" />
-    <Compile Include="Source\WildSpawnFix.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Defs\" />

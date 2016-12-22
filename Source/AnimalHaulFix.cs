@@ -13,8 +13,8 @@ namespace ZhentarFix
 		[DetourClassMethod(typeof(JobGiver_Haul))]
 		protected Job TryGiveJob(Pawn pawn)
 		{
-			Predicate<Thing> validator = t => !t.IsForbidden(pawn) && HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t) && IsPlaceToPutThing(pawn, t);
-			Thing thing = GenClosest.ClosestThing_Global_Reachable(pawn.Position, ListerHaulables.ThingsPotentiallyNeedingHauling(), PathEndMode.OnCell, TraverseParms.For(pawn), 9999f, validator);
+			Predicate<Thing> validator =  t => !t.IsForbidden(pawn) && HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t) && IsPlaceToPutThing(pawn, t);
+			Thing thing = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map, pawn.Map.listerHaulables.ThingsPotentiallyNeedingHauling(), PathEndMode.OnCell, TraverseParms.For(pawn, Danger.Deadly, TraverseMode.ByPawn, false), 9999f, validator, null);
 			if (thing != null)
 			{
 				return HaulAIUtility.HaulToStorageJob(pawn, thing);
@@ -26,7 +26,7 @@ namespace ZhentarFix
 		{
 			StoragePriority currentPriority = HaulAIUtility.StoragePriorityAtFor(t.Position, t);
 			IntVec3 storeCell;
-			if (!StoreUtility.TryFindBestBetterStoreCellFor(t, p, currentPriority, p.Faction, out storeCell))
+			if (!StoreUtility.TryFindBestBetterStoreCellFor(t, p, p.Map, currentPriority, p.Faction, out storeCell))
 			{
 				return false;
 			}

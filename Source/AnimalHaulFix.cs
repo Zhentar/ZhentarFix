@@ -8,10 +8,10 @@ using Verse.AI;
 
 namespace ZhentarFix
 {
-	public class AnimalHaulFix
+	public static class AnimalHaulFix
 	{
-		[DetourClassMethod(typeof(JobGiver_Haul))]
-		protected Job TryGiveJob(Pawn pawn)
+		[DetourMember]
+		public static Job TryGiveJob(this JobGiver_Haul @this, Pawn pawn)
 		{
 			Predicate<Thing> validator =  t => !t.IsForbidden(pawn) && HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t) && IsPlaceToPutThing(pawn, t);
 			Thing thing = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map, pawn.Map.listerHaulables.ThingsPotentiallyNeedingHauling(), PathEndMode.OnCell, TraverseParms.For(pawn, Danger.Deadly, TraverseMode.ByPawn, false), 9999f, validator, null);
@@ -22,7 +22,7 @@ namespace ZhentarFix
 			return null;
 		}
 
-		private bool IsPlaceToPutThing(Pawn p, Thing t)
+		private static bool IsPlaceToPutThing(Pawn p, Thing t)
 		{
 			StoragePriority currentPriority = HaulAIUtility.StoragePriorityAtFor(t.Position, t);
 			IntVec3 storeCell;

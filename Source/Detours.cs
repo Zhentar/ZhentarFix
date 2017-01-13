@@ -251,7 +251,10 @@ namespace ZhentarFix
 										  .FirstOrDefault(checkMethod => (
 											 (checkMethod.Name == sourceMember) &&
 											 (checkMethod.ReturnType == destinationMethod.ReturnType) &&
-											 (checkMethod.GetParameters().Select(checkParameter => checkParameter.ParameterType).SequenceEqual(destinationMethod.GetParameters().Select(destinationParameter => destinationParameter.ParameterType)))
+											 (checkMethod.GetParameters().Select(checkParameter => checkParameter.ParameterType)
+																	 	 .SequenceEqual(destinationMethod.GetParameters()
+																										 .Skip(GetMethodType(destinationMethod) == MethodType.Extension ? 1 : 0)
+																										 .Select(destinationParameter => destinationParameter.ParameterType)))
 											));
 			}
 			var fixedName = GetFixedMemberName(sourceMember);
@@ -332,7 +335,7 @@ namespace ZhentarFix
 
 			Performs detours, spits out basic logs and warns if a method is detoured multiple times.
 		**/
-		private static unsafe bool TryDetourFromToInt(MethodInfo source, MethodInfo destination)
+		public static unsafe bool TryDetourFromToInt(MethodBase source, MethodBase destination)
 		{
 
 			// keep track of detours and spit out some messaging

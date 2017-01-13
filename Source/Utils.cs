@@ -10,7 +10,12 @@ namespace ZhentarFix
 	{
 		public static Func<TValue> GetStaticFieldAccessor<TObject, TValue>(string fieldName)
 		{
-			var fieldInfo = typeof(TObject).GetField(fieldName, Detours.UniversalBindingFlags);
+			return GetStaticFieldAccessor<TValue>(fieldName, typeof(TObject));
+		}
+
+		public static Func<TValue> GetStaticFieldAccessor<TValue>(string fieldName, Type classType)
+		{
+			var fieldInfo = classType.GetField(fieldName, Detours.UniversalBindingFlags);
 			var member = Expression.Field(null, fieldInfo);
 			var lambda = Expression.Lambda(typeof(Func<TValue>), member);
 			var compiled = (Func<TValue>)lambda.Compile();

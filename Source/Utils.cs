@@ -25,5 +25,38 @@ namespace ZhentarFix
 			var compiled = (Func<TObject, TValue>)lambda.Compile();
 			return compiled;
 		}
+
+		public static Action<TObject, TArgs1, TArgs2> GetMethodInvoker<TObject, TArgs1, TArgs2>(string methodName)
+		{
+			var methodInfo = typeof(TObject).GetMethod(methodName, Detours.UniversalBindingFlags, null, new[] { typeof(TArgs1), typeof(TArgs2) }, null);
+
+			var param = Expression.Parameter(typeof(TObject), "thisArg");
+
+			var argParams = new[]
+				{ Expression.Parameter(typeof(TArgs1), "arg1"), Expression.Parameter(typeof(TArgs2), "arg2")};
+
+			var call = Expression.Call(param, methodInfo, argParams);
+
+			var lambda = Expression.Lambda(typeof(Action<TObject, TArgs1, TArgs2>), call, param, argParams[0], argParams[1]);
+			var compiled = (Action<TObject, TArgs1, TArgs2>)lambda.Compile();
+			return compiled;
+
+		}
+
+		public static Action<TObject, TArgs1> GetMethodInvoker<TObject, TArgs1>(string methodName)
+		{
+			var methodInfo = typeof(TObject).GetMethod(methodName, Detours.UniversalBindingFlags, null, new[] { typeof(TArgs1)}, null);
+
+			var param = Expression.Parameter(typeof(TObject), "thisArg");
+
+			var argParams = new[] { Expression.Parameter(typeof(TArgs1), "arg1")};
+
+			var call = Expression.Call(param, methodInfo, argParams);
+
+			var lambda = Expression.Lambda(typeof(Action<TObject, TArgs1>), call, param, argParams[0]);
+			var compiled = (Action<TObject, TArgs1>)lambda.Compile();
+			return compiled;
+
+		}
 	}
 }

@@ -544,24 +544,15 @@ namespace ZhentarFix
 		/// <param name="detourContainerClass">Detour container class</param>
 		private static bool DetourContainerClassIsFieldSafe(Type detourContainerClass)
 		{
-			var fields = detourContainerClass.GetFields(UniversalBindingFlags);
+			var fields = detourContainerClass.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 			if (fields.NullOrEmpty())
 			{   // No fields, no worries
 				return true;
 			}
 
-			var baseFields = (detourContainerClass.BaseType?.GetFields(BindingFlags.Instance | BindingFlags.Public)?.Select(finfo => finfo.Name) ?? Enumerable.Empty<string>()).ToArray();
-
-			// Check that each field is static
-			foreach (var field in fields.Where(f => !baseFields.Contains(f.Name)))
-			{
-				if (!field.IsStatic)
-				{
-					return false;
-				}
-			}
-
-			return true;
+			var baseFields = (detourContainerClass.BaseType?.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f => !f.IsPrivate).Select(finfo => finfo.Name) ?? Enumerable.Empty<string>()).ToArray();
+			//Make sure all instance fields were inherited from the parent class
+			return fields.All(f => baseFields.Contains(f.Name));
 		}
 
 		/// <summary>

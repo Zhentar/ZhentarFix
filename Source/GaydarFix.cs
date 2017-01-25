@@ -38,7 +38,6 @@ namespace ZhentarFix
 			float num5 = Mathf.InverseLerp(0.25f, 1f, num);
 			float num6 = Mathf.InverseLerp(5f, 100f, num2);
 			float num7 = initiator.gender != recipient.gender || ( initiator.story.traits.HasTrait(TraitDefOf.Gay) && recipient.story.traits.HasTrait(TraitDefOf.Gay)) ? 1f : 0.15f;
-			Log.Message(initiator + " to " + recipient + " num7: " + num7);
 			return 1.15f * num4 * num5 * num6 * num3 * num7;
 		}
 	}

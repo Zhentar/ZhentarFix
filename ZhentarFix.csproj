@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Source\AnimalHaulFix.cs" />
     <Compile Include="Source\Detours.cs" />
+    <Compile Include="Source\FirefightingFixes.cs" />
     <Compile Include="Source\FoodUtilityFix.cs" />
     <Compile Include="Source\GaydarFix.cs" />
     <Compile Include="Source\PawnRotatorFix.cs" />
